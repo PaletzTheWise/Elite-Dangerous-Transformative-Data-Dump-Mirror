@@ -1,0 +1,10 @@
+-debug
+
+-cp src
+-dce no
+
+--each
+
+## PHP
+-php bin
+--main com.paletzthewise.tddm.Example

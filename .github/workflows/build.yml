@@ -1,0 +1,59 @@
+# This is a basic workflow to help you get started with Actions
+
+name: build
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  #push:
+  #  branches: [ master ]
+  #pull_request:
+  #  branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: pwsh
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Install haxe v1.1.6
+      - uses: krdlab/setup-haxe@3eacc6f763a46d90d83df07afb4972250e8e8fdb
+        with:
+          haxe-version: 4.3.0
+      
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # Runs a single command using the runners shell
+      - name: build TDDM
+        run: .\\build.ps1
+
+      - name: Identify version
+        run: |
+          $branch = git rev-parse --abbrev-ref HEAD
+          if ( -not $? ) { exit 1 }
+          $commitCount = "{0:D3}" -f [int]$(git rev-list --count HEAD)
+          if ( -not $? ) { exit 1 }
+          echo "tag_name=$branch-$commitCount" | Out-File -FilePath $env:GITHUB_ENV -Append
+          if ( -not $? ) { exit 1 }
+          echo "tag_name=$branch-$commitCount"
+      # Tag and release on github v1.9.0
+      - uses: ncipollo/release-action@40bb172bd05f266cf9ba4ff965cb61e9ee5f6d01
+        with:
+          artifacts: "release/EliteDangerousAlteringDataDumpMirror.zip"
+          artifactErrorsFailBuild: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit: master
+          tag: ${{ env.tag_name }}
