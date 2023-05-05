@@ -52,7 +52,7 @@ jobs:
       # Tag and release on github v1.9.0
       - uses: ncipollo/release-action@40bb172bd05f266cf9ba4ff965cb61e9ee5f6d01
         with:
-          artifacts: "release/EliteDangerousAlteringDataDumpMirror.zip"
+          artifacts: "release/EliteDangerousTransformativeDataDumpMirror.zip"
           artifactErrorsFailBuild: true
           token: ${{ secrets.GITHUB_TOKEN }}
           commit: master

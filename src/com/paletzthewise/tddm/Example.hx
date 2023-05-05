@@ -1,3 +1,13 @@
+// Copyright 2023 Paletz
+//
+// This file is part of Elite Dangerous Transformative Data Dump Mirror (TDDM)
+//
+// TDDM is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+//
+// TDDM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
+
 package com.paletzthewise.tddm;
 
 import com.paletzthewise.elite.EdsmToEddbTranslator;
@@ -16,11 +26,11 @@ import com.paletzthewise.tddm.TransformativeDataDumpMirror;
 
 /** PHP transformative data dump mirror example
  * 
- * The source URL is defined by the url variable, by default it points to the edsm.systemsPopulated.sample.json.gz file deployed in the same folder as index.php. Use https://www.edsm.net/dump/systemsPopulated.json.gz for the real data dump.
+ * The source URL is defined by the url variable, by default it points to https://www.edsm.net/dump/systemsPopulated.json.gz. A small static sample is also available as edsm.systemsPopulated.sample.json.gz.
  * 
  * Renders a data dump file depending on the arguments:
  *   * ?example=id              - Renders the remote as is.
- *   * ?example=eddb&filename=x - Translates the edsm file in to eddb-style systems/stations/factions files. x must be one of the following "systems_populated.sample.json.gz", "stations.sample.json.gz" or "factions.sample.json.gz".
+ *   * ?example=eddb&filename=x - Translates the edsm file in to eddb-style systems/stations/factions files. x must be one of the following "systems_populated.json", "stations.json" or "factions.json".
 **/
 class Example
 {
@@ -29,9 +39,10 @@ class Example
 		try 
 		{
 			// Url to the "remote" dump file, this example uses a sample in its own folder.
-			var url = PhpTools.getUrlToSelfFolder() + "edsm.systemsPopulated.sample.json.gz";
+			var url = "https://www.edsm.net/dump/systemsPopulated.json.gz";
+			//var url = PhpTools.getUrlToSelfFolder() + "edsm.systemsPopulated.sample.json.gz"; // small static sample alternative
 			
-			var mainFolder = StringTools.replace( Global.dirname( Const.__FILE__ ), ['','com','paletzthewise','elite','tddm'].join(Const.DIRECTORY_SEPARATOR), "" ); // shave off the package
+			var mainFolder = StringTools.replace( Global.dirname( Const.__FILE__ ), ['','com','paletzthewise','tddm'].join(Const.DIRECTORY_SEPARATOR), "" ); // shave off the package
 			var cacheDirectory = mainFolder.substring( 0, mainFolder.length - 4 ); // Haxe generates all classes into the lib/ subfolder
 			
 			if ( !Global.array_key_exists( 'example', SuperGlobal._GET ) )
@@ -64,9 +75,9 @@ class Example
 				
 				var lockFilename = "eddb.sample.lock";
 				
-				var dataFilenameSystems = "systems_populated.json.gz";
-				var dataFilenameStations = "stations.json.gz";
-				var dataFilenameFactions = "factions.json.gz";
+				var dataFilenameSystems = "systems_populated.json";
+				var dataFilenameStations = "stations.json";
+				var dataFilenameFactions = "factions.json";
 				
 				var dataFilename = null;
 				if ( [dataFilenameSystems, dataFilenameStations, dataFilenameFactions].contains( SuperGlobal._GET['filename'] ) )

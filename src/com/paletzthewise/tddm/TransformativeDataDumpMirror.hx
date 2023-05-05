@@ -1,3 +1,13 @@
+// Copyright 2023 Paletz
+//
+// This file is part of Elite Dangerous Transformative Data Dump Mirror (TDDM)
+//
+// TDDM is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+//
+// TDDM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
+
 package com.paletzthewise.tddm;
 import com.paletzthewise.tddm.TempFile;
 import com.paletzthewise.tddm.FileLock;
@@ -95,42 +105,52 @@ class TransformativeDataDumpMirror
 	{
 		var maxCacheAge = 5 * 60;
 		
-		if ( Global.file_exists(modtimeFilepath) ) // The cached file(s) must exist if the modtime file exists, otherwise somebody screwed up
+		if ( !Global.file_exists(modtimeFilepath) )
 		{
-			// Only check the URL if we did not in a while.
-			if ( Global.file_exists(checkFilepath) && getModifiedTime(checkFilepath) + maxCacheAge > Global.time() )
+			PhpTools.log( LogLevel.NOTICE, 'TDDM: Modtime file "$modtimeFilepath" does not exist.' );
+			return false;
+		}
+		
+		// The cached file(s) must exist if the modtime file exists, otherwise somebody screwed up
+		
+		// Only check the URL if we did not in a while.
+		if ( Global.file_exists(checkFilepath) && getModifiedTime(checkFilepath) + maxCacheAge > Global.time() )
+		{
+			return true;
+		}
+		else
+		{
+			if ( assumeRemoteNewer )
 			{
+				PhpTools.log( LogLevel.INFO, 'TDDM: Assuming $url newer.' );
+				return false;
+			}
+			
+			PhpTools.log( LogLevel.INFO, 'TDDM: Checking $url' );
+			
+			var cachedFileTimestamp = getModifiedTime( modtimeFilepath );
+			
+			var setOptLastModifiedOnly = function ( curlHandle : Resource )
+			{
+				if ( !PhpToolsGlobal.curl_setopt( curlHandle, PhpToolsConst.CURLOPT_NOBODY, true ) )
+				{
+					throw new Exception( "TDDM: Couldn't set curl optional parameter NOBODY" );
+				}
+			}
+			
+			var urlTimestamp = accessUrl(setOptLastModifiedOnly).lastModified;
+			
+			if ( urlTimestamp <= cachedFileTimestamp )
+			{
+				Global.touch( checkFilepath );
 				return true;
 			}
 			else
 			{
-				if ( assumeRemoteNewer )
-				{
-					return false;
-				}
-				
-				var cachedFileTimestamp = getModifiedTime( modtimeFilepath );
-				
-				var setOptLastModifiedOnly = function ( curlHandle : Resource )
-				{
-					if ( !PhpToolsGlobal.curl_setopt( curlHandle, PhpToolsConst.CURLOPT_NOBODY, true ) )
-					{
-						throw new Exception( "TDDM: Couldn't set curl optional parameter NOBODY" );
-					}
-				}
-				
-				PhpTools.log( LogLevel.INFO, 'TDDM: Checking $url' );
-				var urlTimestamp = accessUrl(setOptLastModifiedOnly).lastModified;
-				
-				if ( urlTimestamp <= cachedFileTimestamp )
-				{
-					Global.touch( checkFilepath );
-					return true;
-				}
+				PhpTools.log( LogLevel.NOTICE, 'TDDM: $url is newer.' );
+				return false;
 			}
 		}
-		
-		return false;
 	}
 	
 	private function accessUrl( curlOptSetter : Resource->Void ) : { lastModified : Int }
