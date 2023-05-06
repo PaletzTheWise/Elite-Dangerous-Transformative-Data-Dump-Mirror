@@ -4,7 +4,7 @@ This primarily Haxe/php library for transforming and then mirroring data from va
 
 The mirror accepts arbitrary trasformation function and includes two examples:
  * id           - no transformation, just mirror the file as-is
- * EDSM to EDDB - a rudimentary translation from EDSM systemsPopulated.json.gz to what eddb.io systems_populated/stations/factions json dumps used to look like. This might be useful to people who wrote algorithms running on the dumps from the now defunct eddb.io.
+ * EDSM to EDDB - a rudimentary translation from EDSM systemsPopulated.json.gz to what eddb.io systems_populated/stations/factions json dumps used to look like. This might be useful to people who wrote algorithms running on the dumps from the now defunct eddb.io. This example is used by/available at https://paletzthewise.com/elite-dangerous-reconstructed-eddb-dumps/.
  
 The Haxe code transpiles into php, which might be useable as a php library (see releases). The EDSM to EDDB translator is pure haxe, so it can be used on any Haxe target.
 
