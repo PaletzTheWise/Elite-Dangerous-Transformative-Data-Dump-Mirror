@@ -106,7 +106,7 @@ class Example
 						TempFile.with( mirror.getTempDirectory(), "stations", "wb", true,	function ( stationsTempFile : TempFile ) {
 							TempFile.with( mirror.getTempDirectory(), "factions", "wb", true, function ( factionsTempFile : TempFile ) {
 								
-								EdsmToEddbSystemTranslator.transform(
+								new EdsmToEddbTranslator().transform(
 									()->rawRemoteFile.readLine(),
 									systemsString->systemsTempFile.write( systemsString ),
 									stationsString->stationsTempFile.write( stationsString ),

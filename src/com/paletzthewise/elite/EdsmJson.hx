@@ -62,7 +62,7 @@ typedef EdsmFactionPresenceRecord =
 	recoveringStates : Array<{state : String}>,
 	pendingStates : Array<{state : String}>,
 	happiness : String,
-	 lastUpdate : Int,
+	lastUpdate : Int,
 }
 
 typedef EdsmStationRecord =

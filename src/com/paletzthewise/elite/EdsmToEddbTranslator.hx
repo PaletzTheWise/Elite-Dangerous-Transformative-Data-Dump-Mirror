@@ -14,7 +14,7 @@ import com.paletzthewise.elite.EddbJson;
 import haxe.Exception;
 import haxe.Json;
 
-class EdsmToEddbSystemTranslator
+class EdsmToEddbTranslator
 {
 
 	var definedFactionIds = new Map<Int,Int>(); // value is unused
@@ -23,68 +23,62 @@ class EdsmToEddbSystemTranslator
 	{
 	}
 	
-	/** Translate EDSM system record into EDDB records
-	 * 
-	 * If a faction was seen before, then it won't be included again in the faction records.
-	**/
-	public function translate( edsmSystem : EdsmSystemRecord ) : { system : EddbSystemRecord, stations : Array<EddbStationRecord>, factions : Array<EddbFactionRecord> }
+	public function translateFactionPresence( edsmSystem : EdsmSystemRecord, edsmFactionPresence : EdsmFactionPresenceRecord ) : Dynamic
 	{
-		if ( edsmSystem.factions == null )
-		{
-			throw new Exception( "Can't translate due to missing faction information." );
-		}
-		
-		var newEddbFactionRecords = new Array<EddbFactionRecord>();
-		var eddbFactionPresences = new Array<EddbFactionPresenceRecord>();
-		for ( edsmFactionPresence in edsmSystem.factions )
-		{
-			eddbFactionPresences.push(
-				{
-					minor_faction_id : edsmFactionPresence.id,
-					active_states : edsmFactionPresence.activeStates.map( edsmFactionStateToEddb ),
-					pending_states : edsmFactionPresence.pendingStates.map( edsmFactionStateToEddb ),
-					recovering_states : edsmFactionPresence.recoveringStates.map( edsmFactionStateToEddb ),
-					influence : edsmFactionPresence.influence,
-					happiness_id : -1, // ???
-				}
-			);
-			
-			if ( !definedFactionIds.exists( edsmFactionPresence.id ) )
+		var eddbFactionPresence : EddbFactionPresenceRecord = (
 			{
-				definedFactionIds.set( edsmFactionPresence.id, null );
-				newEddbFactionRecords.push( 
-					{
-						id : edsmFactionPresence.id,
-						name : edsmFactionPresence.name,
-						government_name : edsmFactionPresence.government,
-						allegiance : edsmFactionPresence.allegiance,
-						allegiance_id : -1, // ???
-						home_system_id : -1, // ???
-						is_player_faction : edsmFactionPresence.isPlayer,
-						updated_at : edsmFactionPresence.lastUpdate,
-						government_id : -1, // ???
-						government : edsmFactionPresence.government,
-					}
-				);
+				minor_faction_id : edsmFactionPresence.id,
+				active_states : edsmFactionPresence.activeStates.map( edsmFactionStateToEddb ),
+				pending_states : edsmFactionPresence.pendingStates.map( edsmFactionStateToEddb ),
+				recovering_states : edsmFactionPresence.recoveringStates.map( edsmFactionStateToEddb ),
+				influence : edsmFactionPresence.influence,
+				happiness_id : -1, // ???
 			}
-		}
+		);
+			
+		return eddbFactionPresence;
+	}
+	
+	
+	public function translateFaction( edsmFactionPresence : EdsmFactionPresenceRecord ) : Dynamic
+	{
+		var eddbFaction : EddbFactionRecord = (
+			{
+				id : edsmFactionPresence.id,
+				name : edsmFactionPresence.name,
+				government_name : edsmFactionPresence.government,
+				allegiance : edsmFactionPresence.allegiance,
+				allegiance_id : -1, // ???
+				home_system_id : -1, // ???
+				is_player_faction : edsmFactionPresence.isPlayer,
+				updated_at : edsmFactionPresence.lastUpdate,
+				government_id : -1, // ???
+				government : edsmFactionPresence.government,
+			}
+		);
 		
-		var eddbStations = new Array<EddbStationRecord>();
-		for ( edsmStation in edsmSystem.stations )
-		{
-			eddbStations.push( 
-				{
-					id : edsmStation.id,
-					name : edsmStation.name,
-					system_id : edsmSystem.id,
-					distance_to_star : edsmStation.distanceToArrival,
-					type : StringTools.replace( edsmStation.type, " ", "" ),
-					has_docking : true, // the only stations that have false in EDDB are "UnknownDockable" and about a hundred OddyseySettlements
-					controlling_minor_faction_id : ( edsmStation.controllingFaction != null ? edsmStation.controllingFaction.id : null ),
-				}
-			);
-		}
+		return eddbFaction;
+	}
+	
+	public function translateStation( edsmSystem : EdsmSystemRecord, edsmStation : EdsmStationRecord ) : Dynamic
+	{
+		var eddbStation : EddbStationRecord = (
+			{
+				id : edsmStation.id,
+				name : edsmStation.name,
+				system_id : edsmSystem.id,
+				distance_to_star : edsmStation.distanceToArrival,
+				type : StringTools.replace( edsmStation.type, " ", "" ),
+				has_docking : true, // the only stations that have false in EDDB are "UnknownDockable" and about a hundred OddyseySettlements
+				controlling_minor_faction_id : ( edsmStation.controllingFaction != null ? edsmStation.controllingFaction.id : null ),
+			}
+		);
 		
+		return eddbStation;
+	}
+	
+	public function translateSystem( edsmSystem : EdsmSystemRecord, translatedFactionPresenses : Array<Dynamic> ) : Dynamic
+	{
 		var eddbSystem : EddbSystemRecord = (
 			{
 				id : edsmSystem.id,
@@ -96,30 +90,68 @@ class EdsmToEddbSystemTranslator
 				allegiance : edsmSystem.allegiance,
 				primary_economy : edsmSystem.economy,
 				primary_economy_id : -1, // ???
-				minor_faction_presences : eddbFactionPresences,
+				minor_faction_presences : cast( translatedFactionPresenses ),
 			}
 		);
 		
+		return eddbSystem;
+	}
+	
+	/** Translate EDSM system record into EDDB records
+	 * 
+	 * If a faction was seen before, then it won't be included again in the faction records.
+	**/
+	public function translate( edsmSystem : EdsmSystemRecord ) : { system : Dynamic, stations : Array<Dynamic>, factions : Array<Dynamic> }
+	{
+		if ( edsmSystem.factions == null )
+		{
+			throw new Exception( "Can't translate due to missing faction information." );
+		}
+		
+		var translatedFactionRecords = new Array<Dynamic>();
+		var translatedFactionPresences = new Array<Dynamic>();
+		for ( edsmFactionPresence in edsmSystem.factions )
+		{
+			translatedFactionPresences.push( translateFactionPresence( edsmSystem, edsmFactionPresence ) );
+			
+			if ( !definedFactionIds.exists( edsmFactionPresence.id ) )
+			{
+				definedFactionIds.set( edsmFactionPresence.id, null );
+				
+				translatedFactionRecords.push( translateFaction( edsmFactionPresence ) );
+			}
+		}
+		
+		var translatedStations = new Array<Dynamic>();
+		for ( edsmStation in edsmSystem.stations )
+		{
+			translatedStations.push( translateStation( edsmSystem, edsmStation ) );
+		}
+		
 		return (
 			{
-				system : eddbSystem,
-				stations : eddbStations,
-				factions : newEddbFactionRecords,
+				system : translateSystem( edsmSystem, translatedFactionPresences ),
+				stations : translatedStations,
+				factions : translatedFactionRecords,
 			}
 		);
 	}
 	
-	public static function transform( readEdsmLine : Void->String, writeToEddbSystems : String->Void,  writeToEddbStations : String->Void, writeToEddbFactions : String->Void, reportIssue : String->Void )
+	public function transform( 
+		readEdsmLine : Void->String,
+		writeToSystems : String->Void,
+		writeToStations : String->Void,
+		writeToFactions : String->Void,
+		reportIssue : String->Void,
+	)
 	{
-		writeToEddbSystems("[");
-		writeToEddbStations("[");
-		writeToEddbFactions("[");
+		writeToSystems("[");
+		writeToStations("[");
+		writeToFactions("[");
 
 		var firstSystem = true;
 		var firstFaction = true;
 		var firstStation = true;
-		
-		var translator = new EdsmToEddbSystemTranslator();
 		
 		while ( true )
 		{
@@ -151,10 +183,10 @@ class EdsmToEddbSystemTranslator
 				}
 			);
 			
-			var eddbRecords;
+			var translatedRecords;
 			try
 			{
-				eddbRecords = translator.translate( edsmSystem );
+				translatedRecords = translate( edsmSystem );
 			}
 			catch ( e : Exception )
 			{
@@ -162,25 +194,25 @@ class EdsmToEddbSystemTranslator
 				continue;
 			}
 			
-			for ( eddbFaction in eddbRecords.factions )
+			for ( translatedFaction in translatedRecords.factions )
 			{
-				writeToEddbFactions( ( firstFaction ? "\n" : ",\n" ) + Json.stringify( eddbFaction ) );
+				writeToFactions( ( firstFaction ? "\n" : ",\n" ) + Json.stringify( translatedFaction ) );
 				firstFaction = false;
 			}
 			
-			for ( eddbStation in eddbRecords.stations )
+			for ( translatedStation in translatedRecords.stations )
 			{
-				writeToEddbStations( ( firstStation ? "\n" : ",\n" ) + Json.stringify( eddbStation ) );
+				writeToStations( ( firstStation ? "\n" : ",\n" ) + Json.stringify( translatedStation ) );
 				firstStation = false;
 			}
 			
-			writeToEddbSystems( ( firstSystem ? "\n" : ",\n" ) + Json.stringify( eddbRecords.system ) );
+			writeToSystems( ( firstSystem ? "\n" : ",\n" ) + Json.stringify( translatedRecords.system ) );
 			firstSystem = false;
 		}
 		
-		writeToEddbSystems("\n]");
-		writeToEddbFactions("\n]");
-		writeToEddbStations("\n]");
+		writeToSystems("\n]");
+		writeToFactions("\n]");
+		writeToStations("\n]");
 	}
 	
 	private static function edsmFactionStateToEddb( edsmState : {state : String} ) : EddbFactionStateRecord
