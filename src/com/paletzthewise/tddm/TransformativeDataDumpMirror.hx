@@ -59,9 +59,19 @@ class TransformativeDataDumpMirror
 		this.checkFilepath = cacheDirectory + Const.DIRECTORY_SEPARATOR + utilityPrefix + ".check";
 		this.modtimeFilepath = cacheDirectory + Const.DIRECTORY_SEPARATOR + utilityPrefix + ".modtime";
 		
-		if ( !Global.is_dir( tempDirectory ) && !Global.mkdir( tempDirectory ) )
+		try
 		{
-			throw new Exception('TDDM: Failed to create temp directory $tempDirectory.');
+			if ( !Global.is_dir( tempDirectory ) && !Global.mkdir( tempDirectory ) && !Global.is_dir( tempDirectory ) )
+			{
+				throw new Exception('TDDM: Failed to create temp directory $tempDirectory.');
+			}
+		}
+		catch ( e : Exception )
+		{
+			if ( !Global.is_dir( tempDirectory ) ) // It's possible another thread beat us to it
+			{
+				throw e;
+			}
 		}
 	}
 	
