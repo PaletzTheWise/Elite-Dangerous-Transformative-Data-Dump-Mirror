@@ -45,9 +45,18 @@ class Example
 			var mainFolder = StringTools.replace( Global.dirname( Const.__FILE__ ), ['','com','paletzthewise','tddm'].join(Const.DIRECTORY_SEPARATOR), "" ); // shave off the package
 			var cacheDirectory = mainFolder.substring( 0, mainFolder.length - 4 ); // Haxe generates all classes into the lib/ subfolder
 			
+			var help = (
+				"<br/>Usage:<br/>"
+				+ '<a href="index.php?example=id">index.php?example=id</a> renders the remote as is.<br/>'
+				+ 'EDSM format transformed to EDDB format: edsm file in to eddb-style systems/stations/factions files. x must be one of the following "systems_populated.json", "stations.json" or "factions.json".<br/>'
+				+ '<a href="index.php?example=eddb&filename=systems_populated.json">index.php?example=eddb&filename=systems_populated.json</a><br/>'
+				+ '<a href="index.php?example=eddb&filename=stations.json">index.php?example=eddb&filename=stations.json</a><br/>'
+				+ '<a href="index.php?example=eddb&filename=factions.json">index.php?example=eddb&filename=factions.json</a><br/>'
+			);
+			
 			if ( !Global.array_key_exists( 'example', SuperGlobal._GET ) )
 			{
-				Global.echo( "The example parameter is not set." );
+				Global.echo( "The example parameter is not set." + help );
 				return;
 			}
 			
@@ -69,7 +78,7 @@ class Example
 				
 				if ( !Global.array_key_exists( 'filename', SuperGlobal._GET ) )
 				{
-					Global.echo( "The filename parameter is not set." );
+					Global.echo( "The filename parameter is not set." + help );
 					return;
 				}
 				
@@ -87,7 +96,7 @@ class Example
 				}
 				else
 				{
-					Global.echo( "Invalid value of the filename parameter." );
+					Global.echo( "Invalid value of the filename parameter." + help );
 					return;
 				}
 				
@@ -114,7 +123,7 @@ class Example
 				} );
 				
 			default:
-				Global.echo("Invalid value of the example parameter");
+				Global.echo("Invalid value of the example parameter." +  help);
 			}
 		}
 		catch (e : Exception)
