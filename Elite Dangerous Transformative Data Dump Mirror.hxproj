@@ -44,7 +44,7 @@
     <hidden path="obj" />
   </hiddenPaths>
   <!-- Executed before build -->
-  <preBuildCommand>PowerShell -File build.ps1 -ExecutionPolicy bypass</preBuildCommand>
+  <preBuildCommand>PowerShell -ExecutionPolicy bypass -File build.ps1 -local</preBuildCommand>
   <!-- Executed after build -->
   <postBuildCommand alwaysRun="False" />
   <!-- Other project options -->

@@ -1,3 +1,8 @@
+param (
+	[parameter()]
+	[switch]$local
+)
+
 Push-Location $(Split-Path $MyInvocation.MyCommand.Path)
 if ( -not $? ) { exit 1 }
 
@@ -38,9 +43,11 @@ try
 	
 	
 	# local deployment
-	
-	Expand-Archive -Path "release\EliteDangerousTransformativeDataDumpMirror.zip" -DestinationPath "bin\www" -Force
-	if ( -not $? ) { exit 1 }
+	if ( $local )
+	{
+		Expand-Archive -Path "release\EliteDangerousTransformativeDataDumpMirror.zip" -DestinationPath "bin\www" -Force
+		if ( -not $? ) { exit 1 }
+	}
 	
 	Write-Host Packaging done.
 }
