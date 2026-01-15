@@ -33,6 +33,7 @@ class TempFile
 	public function new( directory : String, prefix : String, mode : String, useGzip : Bool )
 	{
 		this.useGzip = useGzip;
+		
 		try 
 		{
 			path = PhpTools.checkOutcome( Global.tempnam( directory, prefix ), 'Failed to create temp file starting with $prefix in $directory.' );

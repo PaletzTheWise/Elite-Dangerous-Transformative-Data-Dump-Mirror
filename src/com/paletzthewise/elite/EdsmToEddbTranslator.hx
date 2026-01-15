@@ -9,6 +9,7 @@
 // You should have received a copy of the GNU Lesser General Public License along with Foobar. If not, see <https://www.gnu.org/licenses/>.
 	
 package com.paletzthewise.elite;
+import com.paletzthewise.tddm.PhpTools;
 import com.paletzthewise.elite.EdsmJson;
 import com.paletzthewise.elite.EddbJson;
 import haxe.Exception;
@@ -159,6 +160,7 @@ class EdsmToEddbTranslator
 			// Parse one system at a time to keep ram usage low.
 			
 			var line = readEdsmLine();
+
 			if ( line == null )
 			{
 				break;

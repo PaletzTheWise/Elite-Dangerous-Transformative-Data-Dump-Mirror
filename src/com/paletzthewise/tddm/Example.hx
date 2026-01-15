@@ -38,7 +38,7 @@ class Example
 	{
 		try 
 		{
-			// Url to the "remote" dump file, this example uses a sample in its own folder.
+			// Url to the remote dump file
 			var url = "https://www.edsm.net/dump/systemsPopulated.json.gz";
 			//var url = PhpTools.getUrlToSelfFolder() + "edsm.systemsPopulated.sample.json.gz"; // small static sample alternative
 			
@@ -64,13 +64,15 @@ class Example
 			{
 			case "id":
 				var dataFilename = "edsm.systemsPopulated.id.json.gz";
-				var utilityFilenamePrefix = "id";
-				var mirror = new TransformativeDataDumpMirror( url, cacheDirectory, utilityFilenamePrefix );
-				mirror.render( 
+				var utilityFilenamePrefix = "id";	
+				var mirror = new TransformativeDataDumpMirror( url, cacheDirectory, utilityFilenamePrefix, 5*60, 10*60 );
+				mirror.outputTransformed( 
 					dataFilename,
-					function ( rawRemoteFile : TempFile )
+					true,
+					true,
+					function ( rawRemoteFile : FileRead, directory : String )
 					{
-						rawRemoteFile.persist( cacheDirectory + Const.DIRECTORY_SEPARATOR + dataFilename ); // We want the source as is, the temp file will do.
+						Global.copy( rawRemoteFile.getPath(), directory + Const.DIRECTORY_SEPARATOR + dataFilename ); // We want the source as is, the temp file will do.
 					}
 				);
 			case "eddb":
@@ -100,8 +102,12 @@ class Example
 					return;
 				}
 				
-				var mirror = new TransformativeDataDumpMirror( url, cacheDirectory, utilityFilenamePrefix );
-				mirror.render( dataFilename, function ( rawRemoteFile : TempFile ) {
+				var mirror = new TransformativeDataDumpMirror( url, cacheDirectory, utilityFilenamePrefix, 5*60, 10*60 );
+				mirror.outputTransformed( 
+					dataFilename,
+					true,
+					true,
+					function ( rawRemoteFile : FileRead, directory : String ) {
 					TempFile.with( mirror.getTempDirectory(), "systems", "wb", true, function ( systemsTempFile : TempFile ) {
 						TempFile.with( mirror.getTempDirectory(), "stations", "wb", true,	function ( stationsTempFile : TempFile ) {
 							TempFile.with( mirror.getTempDirectory(), "factions", "wb", true, function ( factionsTempFile : TempFile ) {
@@ -114,9 +120,9 @@ class Example
 									issue->PhpTools.log( LogLevel.NOTICE, issue )
 								);
 								
-								systemsTempFile.persist( cacheDirectory + Const.DIRECTORY_SEPARATOR + dataFilenameSystems );
-								stationsTempFile.persist( cacheDirectory + Const.DIRECTORY_SEPARATOR + dataFilenameStations );
-								factionsTempFile.persist( cacheDirectory + Const.DIRECTORY_SEPARATOR + dataFilenameFactions );
+								systemsTempFile.persist( directory + Const.DIRECTORY_SEPARATOR + dataFilenameSystems );
+								stationsTempFile.persist( directory + Const.DIRECTORY_SEPARATOR + dataFilenameStations );
+								factionsTempFile.persist( directory + Const.DIRECTORY_SEPARATOR + dataFilenameFactions );
 							} ); 
 						} ); 
 					} );

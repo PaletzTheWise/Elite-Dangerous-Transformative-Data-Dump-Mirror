@@ -143,4 +143,78 @@ class PhpTools
 		var pageUrl = getUrlToSelf();
 		return pageUrl.substring( 0, pageUrl.lastIndexOf('/') + 1 );
 	}
+
+	public static function getModifiedTime( filePath : String ) : Int
+	{
+		var filemtimeResult = Global.filemtime(filePath);
+		
+		if ( ! filemtimeResult is Int || filemtimeResult == -1 )
+		{
+			throw new Exception( 'TDDM: Couldn\'t read modification time of $filePath' );
+		}
+		
+		return cast( filemtimeResult );
+	}
+
+	public static function getAccessTime( filePath : String ) : Int
+	{
+		var fileatimeResult = Global.fileatime(filePath);
+		
+		if ( ! fileatimeResult is Int || fileatimeResult == -1 )
+		{
+			throw new Exception( 'TDDM: Couldn\'t read access time of $filePath' );
+		}
+		
+		return cast( fileatimeResult );
+	}
+
+	public static function ensureDirectory( path : String ) : Void
+	{
+		try
+		{
+			if ( !Global.is_dir( path ) && !Global.mkdir( path ) && !Global.is_dir( path ) )
+			{
+				throw new Exception('Failed to create directory $path.');
+			}
+		}
+		catch ( e : Exception )
+		{
+			if ( !Global.is_dir( path ) ) // It's possible another thread beat us to it
+			{
+				throw e;
+			}
+		}
+	}
+
+	public static function makeRandomDir( directory : String, prefix : String ) : String
+	{
+		for (i in 0...100)
+		{
+			var path = directory + Const.DIRECTORY_SEPARATOR + prefix + Global.random_int(0, 99999);
+			if (Global.mkdir(path))
+			{
+				return path;
+			}
+		}
+
+		throw new Exception('Failed to create random directory starting with "$prefix" in "$directory".');
+	} 
+
+	public static function recursiveRemove( path : String ) : Bool
+	{
+		if (Global.is_dir(path))
+		{
+			DirectoryTraversal.with(path,
+				function (directoryTraversal : DirectoryTraversal)
+				{
+					directoryTraversal.for_each_path( recursiveRemove );
+				}
+			);
+			return Global.rmdir(path);
+		}
+		else
+		{
+			return Global.unlink(path);
+		}
+	}
 }
