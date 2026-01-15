@@ -145,6 +145,7 @@ class TransformativeDataDumpMirror
 			throw new  Exception( 'Failed to create temp directory starting with "gen" in $generationsDirectory.' );	
 		}
 
+		Global.touch(getModTimePath(path, GenerationMaturity.None));
 		Global.touch(getUsageTimePath(path));
 
 		PhpTools.log( LogLevel.NOTICE, 'TDDM: Made new generation directory $path.' );
