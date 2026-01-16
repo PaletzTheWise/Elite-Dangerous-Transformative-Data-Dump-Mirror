@@ -38,7 +38,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: build TDDM
-        run: .\\build.sh
+        run: ./build.sh
 
       - name: Identify version
         run: |
