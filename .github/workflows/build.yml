@@ -45,7 +45,7 @@ jobs:
           branch=$(git rev-parse --abbrev-ref HEAD)
           commitCount=$(git rev-list --count $branch)
           commitHash=$(git rev-parse HEAD)
-          echo "$branch-$commitCount-$commitHash"
+          echo "tag_name=$branch-$commitCount" | tee -a "$GITHUB_ENV"
       # Tag and release on github v1.9.0
       - uses: ncipollo/release-action@40bb172bd05f266cf9ba4ff965cb61e9ee5f6d01
         with:
